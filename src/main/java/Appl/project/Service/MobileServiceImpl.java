@@ -2,6 +2,7 @@ package Appl.project.Service;
 
 import Appl.project.Exceptions.ItemNotFoundException;
 import Appl.project.Model.Mobile;
+import Appl.project.Repository.CartRepo;
 import Appl.project.Repository.MobileRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,10 +15,11 @@ import java.util.Objects;
 public class MobileServiceImpl implements MobileService {
     @Autowired
     MobileRepo mobileRepo;
+    @Autowired
+    CartService cartService;
 
     @Override
     public List<Mobile> addMobile(Iterable<Mobile> product) {
-        System.out.println("Adding product");
         return mobileRepo.saveAll(product);
     }
 
@@ -40,6 +42,10 @@ public class MobileServiceImpl implements MobileService {
                     ans.add(each);
                 }
             }
+        }
+        if(ans.isEmpty())
+        {
+            throw new ItemNotFoundException("No mobiles exist with given name");
         }
         return ans;
     }
@@ -70,6 +76,7 @@ public class MobileServiceImpl implements MobileService {
         Mobile product = mobileRepo.findById(mobileId).orElseThrow(
                 () -> new ItemNotFoundException("No such item found by id = "+mobileId)
         );
+        cartService.deleteFromCartsByMobileId(product.getMobileId());
         mobileRepo.delete(product);
     }
 }

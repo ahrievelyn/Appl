@@ -13,4 +13,5 @@ public interface CartService {
     ArrayList<Mobile> showCartById(Integer cartId);
     void deleteFromCartById(Integer cartId);
     void deleteFromCartByMobileId(Integer cartId, Integer mobileId);
+    void deleteFromCartsByMobileId(Integer mobileId);
 }

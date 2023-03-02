@@ -1,5 +1,6 @@
 package Appl.project.Controller;
 
+import Appl.project.Exceptions.ItemNotFoundException;
 import Appl.project.Model.Mobile;
 import Appl.project.Service.MobileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +18,31 @@ public class MobileController {
     MobileService mobileService;
 
     @PostMapping("/mobiles")
-    public ResponseEntity<List<Mobile>> addProduct(@RequestBody Iterable<Mobile> prod){
+    public ResponseEntity<Object> addProduct(@RequestBody Iterable<Mobile> prod){
         return new ResponseEntity<>(mobileService.addMobile(prod),HttpStatus.CREATED);
     }
     @GetMapping("/mobiles/id/{id}")
     //We are getting the details of the product using getProductById method of ProductService class, and adding the response into http response entity's body.
-    public ResponseEntity<Mobile> getProductById(@PathVariable("id") Integer id){
-        return ResponseEntity.ok().body(mobileService.getMobileById(id));
+    public ResponseEntity<Object> getProductById(@PathVariable("id") Integer id){
+        try {
+            return ResponseEntity.ok().body(mobileService.getMobileById(id));
+        }
+        catch (ItemNotFoundException e)
+        {
+            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/mobiles/name/{name}")
     //We are getting the details of the product using getProductById method of ProductService class, and adding the response into http response entity's body.
-    public ArrayList<Mobile> getProductByName(@PathVariable("name") String name){
-        return (mobileService.getMobileByName(name.toLowerCase()));
+    public ResponseEntity<Object> getProductByName(@PathVariable("name") String name){
+        try {
+            return ResponseEntity.ok().body(mobileService.getMobileByName(name.toLowerCase()));
+        }
+       catch (ItemNotFoundException e)
+       {
+           return new ResponseEntity<Object>(e.getMessage(), HttpStatus.NOT_FOUND);
+       }
     }
     @GetMapping("/mobiles")
     public List<Mobile> getProducts(){
@@ -37,12 +50,25 @@ public class MobileController {
     }
 
     @PutMapping("/mobiles/update/{id}")
-    public ResponseEntity<Mobile> updateProduct(@PathVariable("id") Integer id, @RequestBody Mobile prod){
-        return new ResponseEntity<>(mobileService.updateMobile(id,prod),HttpStatus.OK);
+    public ResponseEntity<Object> updateProduct(@PathVariable("id") Integer id, @RequestBody Mobile prod){
+        try
+        {
+            return new ResponseEntity<>(mobileService.updateMobile(id,prod),HttpStatus.OK);
+        }
+        catch(ItemNotFoundException e)
+        {
+            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
     @DeleteMapping("mobiles/delete/{id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable("id") int id) {
-        mobileService.deleteMobile(id);
-        return new ResponseEntity<>("", HttpStatus.OK);
+        try {
+            mobileService.deleteMobile(id);
+            return new ResponseEntity<>("", HttpStatus.OK);
+        }
+        catch(ItemNotFoundException e)
+        {
+            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 }

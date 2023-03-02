@@ -115,4 +115,17 @@ public class CartServiceImpl extends CartResponse implements CartService {
         cart.deleteMobile(mobileId);
         cartRepo.save(cart);
     }
+    @Override
+    public void deleteFromCartsByMobileId(Integer mobileId)
+    {
+        Mobile mobile = mobileRepo.findById(mobileId).orElseThrow(
+                () -> new ItemNotFoundException("No such mobile ("+mobileId+") found"));
+        List<Cart> carts = cartRepo.findAll();
+        for (Cart each: carts){
+            if(each.getMobiles().contains(mobileId))
+            {
+                deleteFromCartByMobileId(each.getOrderId(),mobileId);
+            }
+        }
+    }
 }
