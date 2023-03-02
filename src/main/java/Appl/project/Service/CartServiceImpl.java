@@ -5,11 +5,15 @@ import Appl.project.Model.Cart;
 import Appl.project.Model.Mobile;
 import Appl.project.Repository.CartRepo;
 import Appl.project.Repository.MobileRepo;
+import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.InvalidTransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Objects;
 
 @Service
 
@@ -20,18 +24,16 @@ public class CartServiceImpl extends CartResponse implements CartService {
     MobileRepo mobileRepo;
     @Override
     public Cart createCart(Integer cartId) {
-        Cart c = new Cart();
-        c.setOrderId(cartId);
-        cartRepo.save(c);
-        return c;
-    }
-    @Override
-    public Cart addToCart(Integer mobileId) {
-        Mobile mobile = mobileRepo.findById(mobileId).orElseThrow(
-                () -> new ItemNotFoundException("No such mobile ("+mobileId+") found"));
-        Cart cart = new Cart();
-        cart.setMobile(mobileId);
-        return cartRepo.save(cart);
+        if(cartRepo.existsById(cartId))
+        {
+            throw new EntityExistsException("Cart ("+cartId+") already exists");
+        }
+        else
+        {
+            Cart c = new Cart();
+            c.setOrderId(cartId);
+            return cartRepo.save(c);
+        }
     }
 
     @Override
@@ -40,8 +42,20 @@ public class CartServiceImpl extends CartResponse implements CartService {
                 () -> new ItemNotFoundException("No such cart ("+cartId+") found, Cannot add item to cart that doesn't exist"));
         Mobile mobile = mobileRepo.findById(mobileId).orElseThrow(
                 () -> new ItemNotFoundException("No such mobile ("+mobileId+") found"));
-        cart.setMobile(mobileId);
-        return cartRepo.save(cart);
+        if(!cart.getMobiles().contains(mobileId)){
+            if(mobile.getQuantity()!=0)
+            {
+                cart.setMobile(mobileId);
+                mobile.setQuantity(mobile.getQuantity()-1);
+                return cartRepo.save(cart);
+            }
+            else {
+                throw new ItemNotFoundException("No more mobiles of ("+mobileId+")exist to add");
+            }
+        }
+        else {
+            throw new EntityExistsException("Mobile ("+mobileId+") already exists");
+        }
     }
 
     @Override
@@ -82,15 +96,22 @@ public class CartServiceImpl extends CartResponse implements CartService {
     public void deleteFromCartById(Integer cartId) {
         Cart cart = cartRepo.findById(cartId).orElseThrow(
                 () -> new ItemNotFoundException("No such cart ("+cartId+") found, Cannot delete what doesn't exist"));
+        for (Integer e: cart.getMobiles())
+        {
+            Mobile m = mobileRepo.findById(e).orElseThrow(
+                    () -> new ItemNotFoundException("No such mobile ("+e+") found"));
+            m.setQuantity(m.getQuantity()+1);
+        }
         cartRepo.delete(cart);
     }
 
     @Override
     public void deleteFromCartByMobileId(Integer cartId, Integer mobileId){
         Cart cart = cartRepo.findById(cartId).orElseThrow(
-                () -> new ItemNotFoundException("No such cart ("+cartId+") found, Cannot delete what doesn't exist"));
+                () -> new ItemNotFoundException("No such cart ("+cartId+") found, Cannot delete from what doesn't exist"));
         Mobile mobile = mobileRepo.findById(mobileId).orElseThrow(
                 () -> new ItemNotFoundException("No such mobile ("+mobileId+") found"));
+        mobile.setQuantity(mobile.getQuantity()+1);
         cart.deleteMobile(mobileId);
         cartRepo.save(cart);
     }

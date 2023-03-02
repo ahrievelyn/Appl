@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface CartService {
     Cart createCart(Integer cartId);
-    Cart addToCart(Integer mobileId);
     Cart addToCartById(Integer cartId, Integer mobileId);
     ArrayList<CartResponse> showCart();
     ArrayList<Mobile> showCartById(Integer cartId);
