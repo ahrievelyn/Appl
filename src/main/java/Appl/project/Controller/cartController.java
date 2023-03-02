@@ -28,7 +28,7 @@ public class cartController {
 
     @PostMapping("/cart/create")
     /*This creates a cart with specified id passed through request body.
-    If the cart already exists with given Id, it throws exception mentioning the same to client in the response.
+    If the cart already exists with given id, it throws exception mentioning the same to client in the response.
     If the cart doesn't exist, it creates a cart with given id sends a success message.
      */
     public ResponseEntity<Object> createCart(@RequestBody Integer cartId) {

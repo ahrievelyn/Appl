@@ -3,6 +3,7 @@ package Appl.project.Controller;
 import Appl.project.Exceptions.ItemNotFoundException;
 import Appl.project.Model.Mobile;
 import Appl.project.Service.MobileService;
+import jakarta.persistence.EntityExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,13 @@ public class MobileController {
 
     @PostMapping("/mobiles")
     public ResponseEntity<Object> addProduct(@RequestBody Iterable<Mobile> prod){
-        return new ResponseEntity<>(mobileService.addMobile(prod),HttpStatus.CREATED);
+        try{
+            return new ResponseEntity<>(mobileService.addMobile(prod),HttpStatus.CREATED);
+        }
+        catch(EntityExistsException e)
+        {
+            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.NOT_IMPLEMENTED);
+        }
     }
     @GetMapping("/mobiles/id/{id}")
     //We are getting the details of the product using getProductById method of ProductService class, and adding the response into http response entity's body.

@@ -11,7 +11,7 @@ import lombok.*;
 @Table(name = "mobiles")
 public class Mobile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="mobileId")
     private Integer mobileId;
     @Column(name="hasBluetoothConnectivity")

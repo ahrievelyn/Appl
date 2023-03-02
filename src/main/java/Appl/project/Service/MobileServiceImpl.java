@@ -4,9 +4,11 @@ import Appl.project.Exceptions.ItemNotFoundException;
 import Appl.project.Model.Mobile;
 import Appl.project.Repository.CartRepo;
 import Appl.project.Repository.MobileRepo;
+import jakarta.persistence.EntityExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +22,24 @@ public class MobileServiceImpl implements MobileService {
 
     @Override
     public List<Mobile> addMobile(Iterable<Mobile> product) {
-        return mobileRepo.saveAll(product);
+        ArrayList<Mobile> returnList = new ArrayList<>();
+        ArrayList<Integer> exist = new ArrayList<>();
+        for(Mobile m : product)
+        {
+            if(mobileRepo.existsById(m.getMobileId()))
+            {
+                exist.add(m.getMobileId());
+            }
+            else{
+                mobileRepo.save(m);
+                returnList.add(m);
+            }
+        }
+        if(exist.size()>0)
+        {
+            throw new EntityExistsException("Mobiles not existing have been added & Mobiles already existing have been ignored.");
+        }
+        return returnList;
     }
 
     @Override
